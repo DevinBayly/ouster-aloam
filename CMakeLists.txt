@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(aloam_ouster)
+project(aloam_velodyne)
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++11")
@@ -27,8 +27,8 @@ include_directories(
   include
 	${catkin_INCLUDE_DIRS} 
 	${PCL_INCLUDE_DIRS}
-	${CERES_INCLUDE_DIRS}
-  	${OpenCV_INCLUDE_DIRS})
+  ${CERES_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS})
 
 catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy std_msgs
@@ -45,3 +45,10 @@ target_link_libraries(alaserOdometry ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERE
 
 add_executable(alaserMapping src/laserMapping.cpp)
 target_link_libraries(alaserMapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERES_LIBRARIES})
+
+add_executable(kittiHelper src/kittiHelper.cpp)
+target_link_libraries(kittiHelper ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
+
+
+
+

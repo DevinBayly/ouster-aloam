@@ -38,8 +38,8 @@
 #include <cmath>
 #include <vector>
 #include <string>
-#include "aloam_ouster/common.h"
-#include "aloam_ouster/tic_toc.h"
+#include "aloam_velodyne/common.h"
+#include "aloam_velodyne/tic_toc.h"
 #include <nav_msgs/Odometry.h>
 #include <opencv/cv.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -57,12 +57,12 @@ using std::atan2;
 using std::cos;
 using std::sin;
 
-
 const double scanPeriod = 0.1;
 
 const int systemDelay = 0; 
 int systemInitCount = 0;
 bool systemInited = false;
+int N_SCANS = 0;
 float cloudCurvature[400000];
 int cloudSortInd[400000];
 int cloudNeighborPicked[400000];
@@ -166,18 +166,44 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
         float angle = atan(point.z / sqrt(point.x * point.x + point.y * point.y)) * 180 / M_PI;
         int scanID = 0;
 
-	if(N_SCANS != 16 && N_SCANS != 32 && N_SCANS != 64 && N_SCANS != 128) {
-		printf("wrong scan number\n");
-		ROS_BREAK();
-	}
-
-	// use points' vertical angle for each scanID
-        scanID = int((angle + VERTICAL_FOV) / (2.0 * VERTICAL_FOV / N_SCANS));
-        if (scanID > (N_SCANS - 1) || scanID < 0)
+        if (N_SCANS == 16)
         {
-            count--;
-            continue;
+            scanID = int((angle + 15) / 2 + 0.5);
+            if (scanID > (N_SCANS - 1) || scanID < 0)
+            {
+                count--;
+                continue;
+            }
         }
+        else if (N_SCANS == 32)
+        {
+            scanID = int((angle + 92.0/3.0) * 3.0 / 4.0);
+            if (scanID > (N_SCANS - 1) || scanID < 0)
+            {
+                count--;
+                continue;
+            }
+        }
+        else if (N_SCANS == 64)
+        {   
+            if (angle >= -8.83)
+                scanID = int((2 - angle) * 3.0 + 0.5);
+            else
+                scanID = N_SCANS / 2 + int((-8.83 - angle) * 2.0 + 0.5);
+
+            // use [0 50]  > 50 remove outlies 
+            if (angle > 2 || angle < -24.33 || scanID > 50 || scanID < 0)
+            {
+                count--;
+                continue;
+            }
+        }
+        else
+        {
+            printf("wrong scan number\n");
+            ROS_BREAK();
+        }
+        //printf("angle %f scanID %d \n", angle, scanID);
 
         float ori = -atan2(point.y, point.x);
         if (!halfPassed)
@@ -210,8 +236,7 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
         }
 
         float relTime = (ori - startOri) / (endOri - startOri);
-        //// Kai told me to comment this part out
-        point.intensity = scanID + SCAN_PERIOD * relTime;
+        point.intensity = scanID + scanPeriod * relTime;
         laserCloudScans[scanID].push_back(point); 
     }
     
@@ -438,17 +463,19 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "scanRegistration");
     ros::NodeHandle nh;
 
-    nh.param<double>("minimum_range", MINIMUM_RANGE, 0.3);
+    nh.param<int>("scan_line", N_SCANS, 16);
+
+    nh.param<double>("minimum_range", MINIMUM_RANGE, 0.1);
 
     printf("scan line number %d \n", N_SCANS);
 
-    if(N_SCANS != 16 && N_SCANS != 32 && N_SCANS != 64 && N_SCANS != 128)
+    if(N_SCANS != 16 && N_SCANS != 32 && N_SCANS != 64)
     {
-        printf("only support Ouster with 16, 32, 64, or 128 scan line!");
+        printf("only support velodyne with 16, 32 or 64 scan line!");
         return 0;
     }
 
-    ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/os_cloud_node/points", 100, laserCloudHandler);
+    ros::Subscriber subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>("/velodyne_points", 100, laserCloudHandler);
 
     pubLaserCloud = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud_2", 100);
 

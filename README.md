@@ -1,12 +1,11 @@
 # A-LOAM
-## Mofified to adapt for ouster lidar usage
+## Advanced implementation of LOAM
 
 A-LOAM is an Advanced implementation of LOAM (J. Zhang and S. Singh. LOAM: Lidar Odometry and Mapping in Real-time), which uses Eigen and Ceres Solver to simplify code structure. This code is modified from LOAM and [LOAM_NOTED](https://github.com/cuitaixiang/LOAM_NOTED). This code is clean and simple without complicated mathematical derivation and redundant operations. It is a good learning material for SLAM beginners.
 
 <img src="https://github.com/HKUST-Aerial-Robotics/A-LOAM/blob/devel/picture/kitti.png" width = 55% height = 55%/>
 
-**A-LOAM Modifier:** [Tong Qin](http://www.qintonguav.com), [Shaozu Cao](https://github.com/shaozu)
-**A-LOAM Modifier for ouster lidar:** [Hao Yuan](hao.yuan@ouster.io)
+**Modifier:** [Tong Qin](http://www.qintonguav.com), [Shaozu Cao](https://github.com/shaozu)
 
 
 ## 1. Prerequisites
@@ -21,45 +20,45 @@ Follow [Ceres Installation](http://ceres-solver.org/installation.html).
 ### 1.3. **PCL**
 Follow [PCL Installation](http://www.pointclouds.org/downloads/linux.html).
 
-## 2. Build A-LOAM
-Modify the CONFIG MODIFICATION SECTION in the common.h file.
-The configs are predefined and uncomment the N_SCANS, VERTICAL_FOV, and SCAN_PERIOD based on
-the ouster lidar model.
 
-## 3. Build A-LOAM
+## 2. Build A-LOAM
 Clone the repository and catkin_make:
 
 ```
     cd ~/catkin_ws/src
-    git clone git@bitbucket.org:ouster_io/a-loam.git
+    git clone https://github.com/HKUST-Aerial-Robotics/A-LOAM.git
     cd ../
     catkin_make
     source ~/catkin_ws/devel/setup.bash
 ```
 
-## 4. Record an ouster bag by ouster SDK
-Record an ouster bag from a live sensor by ouster SDK. [Recording data](https://github.com/ouster-lidar/ouster_example#recording-data)
-Record both point cloud and IMU by command: rosbag record /os_cloud_node/points /os_cloud_node/imu
-
-
-## 5. Run ouster bag
-Download [Ouster Sample Bag](https://ouster.com/resources/lidar-sample-data/) to YOUR_DATASET_FOLDER. 
+## 3. Velodyne VLP-16 Example
+Download [NSH indoor outdoor](https://drive.google.com/file/d/1s05tBQOLNEDDurlg48KiUWxCp-YqYyGH/view) to YOUR_DATASET_FOLDER. 
 
 ```
-    roslaunch aloam_ouster aloam_ouster.launch
-    rosbag play YOUR_DATASET_FOLDER/OUSTER.bag
+    roslaunch aloam_velodyne aloam_velodyne_VLP_16.launch
+    rosbag play YOUR_DATASET_FOLDER/nsh_indoor_outdoor.bag
 ```
 
-## 6. Run with alive sensor
-Run A-LOAM real time with Ouster lidar. Follow the Running ROS Nodes with a [Live Sensor section](https://github.com/ouster-lidar/ouster_example#running-ros-nodes-with-a-live-sensor) in the ouster github.
+
+## 4. KITTI Example (Velodyne HDL-64)
+Download [KITTI Odometry dataset](http://www.cvlibs.net/datasets/kitti/eval_odometry.php) to YOUR_DATASET_FOLDER and set the `dataset_folder` and `sequence_number` parameters in `kitti_helper.launch` file. Note you also convert KITTI dataset to bag file for easy use by setting proper parameters in `kitti_helper.launch`. 
 
 ```
-    roslaunch aloam_ouster aloam_ouster.launch
-    roslaunch ouster_ros ouster.launch sensor_hostname:=<sensor hostname> \
-                                   udp_dest:=<udp data destination> \
-                                   metadata:=<path to metadata json> \
-                                   lidar_mode:=<lidar mode> viz:=<viz>
+    roslaunch aloam_velodyne aloam_velodyne_HDL_64.launch
+    roslaunch aloam_velodyne kitti_helper.launch
 ```
+<img src="https://github.com/HKUST-Aerial-Robotics/A-LOAM/blob/devel/picture/kitti_gif.gif" width = 720 height = 351 />
 
-## 7.Acknowledgements
+## 5. Docker Support
+To further facilitate the building process, we add docker in our code. Docker environment is like a sandbox, thus makes our code environment-independent. To run with docker, first make sure [ros](http://wiki.ros.org/ROS/Installation) and [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) are installed on your machine. Then add your account to `docker` group by `sudo usermod -aG docker $YOUR_USER_NAME`. **Relaunch the terminal or logout and re-login if you get `Permission denied` error**, type:
+```
+cd ~/catkin_ws/src/A-LOAM/docker
+make build
+```
+The build process may take a while depends on your machine. After that, run `./run.sh 16` or `./run.sh 64` to launch A-LOAM, then you should be able to see the result.
+
+
+## 6.Acknowledgements
 Thanks for LOAM(J. Zhang and S. Singh. LOAM: Lidar Odometry and Mapping in Real-time) and [LOAM_NOTED](https://github.com/cuitaixiang/LOAM_NOTED).
+

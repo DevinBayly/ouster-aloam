@@ -1,24 +1,20 @@
 <?xml version="1.0"?>
 <package>
-  <name>aloam_ouster</name>
+  <name>aloam_velodyne</name>
   <version>0.0.0</version>
 
   <description>
     This is an advanced implentation of LOAM.
     LOAM is described in the following paper:
     J. Zhang and S. Singh. LOAM: Lidar Odometry and Mapping in Real-time.
-
-    Robotics: Science and Systems Conference (RSS). Berkeley, CA, July 2014.
-    This is a modified version of the A-LOAM which is to be compatible with
-    ouster lidar
+      Robotics: Science and Systems Conference (RSS). Berkeley, CA, July 2014.
   </description>
 
-  <maintainer email="hao.yuan@ouster.io">hao</maintainer>
+  <maintainer email="qintonguav@gmail.com">qintong</maintainer>
 
   <license>BSD</license>
 
   <author email="zhangji@cmu.edu">Ji Zhang</author>
-  <maintainer email="qintonguav@gmail.com">qintong</maintainer>
   
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>geometry_msgs</build_depend>

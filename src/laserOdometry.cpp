@@ -52,8 +52,8 @@
 #include <mutex>
 #include <queue>
 
-#include "aloam_ouster/common.h"
-#include "aloam_ouster/tic_toc.h"
+#include "aloam_velodyne/common.h"
+#include "aloam_velodyne/tic_toc.h"
 #include "lidarFactor.hpp"
 
 #define DISTORTION 0
@@ -61,6 +61,7 @@
 
 int corner_correspondence = 0, plane_correspondence = 0;
 
+constexpr double SCAN_PERIOD = 0.1;
 constexpr double DISTANCE_SQ_THRESHOLD = 25;
 constexpr double NEARBY_SCAN = 2.5;
 
